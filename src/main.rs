@@ -12,31 +12,47 @@ fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
-        Main {}
+        Hero {}
 
     }
 }
 
 #[component]
-pub fn Main() -> Element {
+pub fn Hero() -> Element {
+    let toggle_post = use_signal(|| false);
+
     rsx! {
 
         div {
             id: "hero",
-            class: "flex bg-pink-400 items-center justify-between w-full h-screen",
+            class: "flex bg-gray-200 items-center justify-between w-full h-screen",
 
-            menu_component {}
-            // posts_component {}
-            post_component {}
+            menu_component { toggle_post }
+
+            if toggle_post() {
+                posts_component {}
+            } else {
+                post_component {}
+            }
         }
     }
 }
 
 #[component]
-fn menu_component() -> Element {
+fn menu_component(toggle_post: Signal<bool>) -> Element {
     rsx! {
         div { class: "left w-2/10 flex flex-col bg-gray-300 h-full items-end gap-3 p-5",
-            button { class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md", "+ create new" }
+            button {
+                onclick: move |_| {
+                    if toggle_post() { toggle_post.set(false) } else { toggle_post.set(true) }
+                },
+                class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md",
+                if toggle_post() {
+                    "cancel"
+                } else {
+                    "+ create new"
+                }
+            }
             div { class: "", "home" }
             div { class: "", "popular" }
             div { class: "", "categories" }
