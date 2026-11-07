@@ -100,7 +100,18 @@ fn post_component(title: Signal<String>, body: Signal<String>) -> Element {
                     },
                 }
             }
-            button { class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md", "publish" }
+            button {
+                class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md",
+                onclick: move |_| async move {
+                    create_post().await.unwrap();
+                },
+                "publish"
+            }
         }
     }
+}
+
+#[server]
+async fn create_post() -> Result<(), ServerFnError> {
+    ok(())
 }
