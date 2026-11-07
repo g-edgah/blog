@@ -22,6 +22,14 @@ pub fn Hero() -> Element {
     let toggle_post = use_signal(|| false);
     let title = use_signal(String::new);
     let body = use_signal(String::new);
+    let mut posts = use_signal(Vec::<Post>::new);
+
+    use_future(move || async move {
+        for post in get_posts().await.unwrap() {
+            println!("posts getting written!");
+            posts.write().push(post);
+        }
+    });
 
     rsx! {
 
@@ -32,9 +40,9 @@ pub fn Hero() -> Element {
             menu_component { toggle_post }
 
             if toggle_post() {
-                posts_component {}
+                posts_component { posts }
             } else {
-                post_component { title, body }
+                add_post_component { title, body }
             }
         }
     }
@@ -72,14 +80,18 @@ fn menu_component(toggle_post: Signal<bool>) -> Element {
 }
 
 #[component]
-fn posts_component() -> Element {
+fn posts_component(posts: Signal<Vec<Post>>) -> Element {
     rsx! {
-        div { "something" }
+        div {
+            for post in posts.iter() {
+                post_card { post: post.clone() }
+            }
+        }
     }
 }
 
 #[component]
-fn post_component(title: Signal<String>, body: Signal<String>) -> Element {
+fn add_post_component(title: Signal<String>, body: Signal<String>) -> Element {
     rsx! {
         div { class: "p-10 right w-8/10 flex flex-col bg-gray-200 h-full gap-10 justify-between",
             form { class: "pt-3 right flex flex-col gap-10 h-full",
@@ -122,40 +134,94 @@ fn post_component(title: Signal<String>, body: Signal<String>) -> Element {
     }
 }
 
+#[component]
+fn post_card(post: Post) -> Element {
+    rsx! {
+        div { class: "w-50 h-50 bg-blue-500",
+            div { class: "", "{post.title}" }
+            div { class: "", "{post.body}" }
+            div { class: "", "{post.time_created}" }
+        }
+    }
+}
+
 #[server]
 async fn create_post(title: String, body: String) -> Result<(), ServerFnError> {
     println!("{} {}", title, body);
     println!("app started");
     let con = rusqlite::Connection::open("./data.db3").unwrap();
 
-    let sql = r#"
-        INSERT INTO posts (
-            user_id,
-            title,
-            body,
-            time_created
-        )
-        VALUES (
-            1,
-            ?1,
-            ?2,
-            CURRENT_TIMESTAMP
-        )
-    "#;
-
-    con.execute(sql, [&title, &body]).unwrap();
-
     // let sql = r#"
-    //     CREATE TABLE IF NOT EXISTS posts (
-    //         id              INTEGER PRIMARY KEY,
-    //         user_id         INTEGER NOT NULL,
-    //         title           TEXT,
-    //         body            TEXT,
-    //         time_created    TIMESTAMP
+    //     INSERT INTO posts (
+    //         user_id,
+    //         title,
+    //         body,
+    //         time_created
+    //     )
+    //     VALUES (
+    //         1,
+    //         ?1,
+    //         ?2,
+    //         CURRENT_TIMESTAMP
     //     )
     // "#;
 
-    // con.execute(sql, ()).unwrap();
+    //con.execute(sql, [&title, &body]).unwrap();
+
+    let sql = r#"
+        CREATE TABLE IF NOT EXISTS posts (
+            id              INTEGER PRIMARY KEY,
+            user_id         INTEGER NOT NULL,
+            title           TEXT,
+            body            TEXT,
+            time_created    TIMESTAMP
+        )
+    "#;
+
+    con.execute(sql, ()).unwrap();
 
     Ok(())
+}
+
+#[server]
+async fn get_posts() -> Result<Vec<Post>, ServerFnError> {
+    let con = rusqlite::Connection::open("./data.db3").unwrap();
+
+    println!("getting posts");
+
+    let mut stm = con
+        .prepare("SELECT id, title, body, time_created FROM posts ORDER BY id DESC")
+        .unwrap();
+
+    let rows = stm
+        .query_map([], |row| {
+            Ok(Post {
+                id: row.get(0).unwrap(),
+                title: row.get(1).unwrap(),
+                body: row.get(2).unwrap(),
+                time_created: row.get(3).unwrap(),
+            })
+        })
+        .unwrap();
+
+    let mut posts: Vec<Post> = Vec::new();
+
+    println!("gotten them posts");
+
+    for row in rows {
+        let post = row.unwrap();
+        posts.push(post);
+    }
+
+    println!("after for statement ");
+
+    Ok(posts)
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct Post {
+    id: u32,
+    title: String,
+    body: String,
+    time_created: String,
 }

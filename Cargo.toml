@@ -9,6 +9,7 @@ edition = "2021"
 [dependencies]
 dioxus = { version = "0.7.1", features = [ "fullstack" ] }
 rusqlite = "0.41.1"
+serde = { version = "1", features = ["derive"] }
 tracing = "0.1.44"
 
 [features]
