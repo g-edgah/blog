@@ -20,6 +20,8 @@ fn App() -> Element {
 #[component]
 pub fn Hero() -> Element {
     let toggle_post = use_signal(|| false);
+    let title = use_signal(String::new);
+    let body = use_signal(String::new);
 
     rsx! {
 
@@ -32,7 +34,7 @@ pub fn Hero() -> Element {
             if toggle_post() {
                 posts_component {}
             } else {
-                post_component {}
+                post_component { title, body }
             }
         }
     }
@@ -77,12 +79,26 @@ fn posts_component() -> Element {
 }
 
 #[component]
-fn post_component() -> Element {
+fn post_component(title: Signal<String>, body: Signal<String>) -> Element {
     rsx! {
         div { class: "p-10 right w-8/10 flex flex-col bg-gray-200 h-full gap-10 justify-between",
             form { class: "pt-3 right flex flex-col gap-10 h-full",
-                input { class: "text-4xl font-semibold", placeholder: "title", "title" }
-                textarea { class: "h-full text-lg font-normal", placeholder: "blog" }
+                input {
+                    class: "text-4xl font-semibold",
+                    placeholder: "title",
+                    oninput: move |event| {
+                        title.set(event.value());
+                    },
+                    value: "{title}",
+                }
+                textarea {
+                    class: "h-full text-lg font-normal",
+                    placeholder: "blog",
+                    value: "{body}",
+                    oninput: move |event| {
+                        body.set(event.value());
+                    },
+                }
             }
             button { class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md", "publish" }
         }
