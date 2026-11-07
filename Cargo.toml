@@ -8,9 +8,11 @@ edition = "2021"
 
 [dependencies]
 dioxus = { version = "0.7.1", features = [ "fullstack" ] }
+rusqlite = "0.41.1"
 
 [features]
 default = ["web"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
+server = ["dioxus/server"]
