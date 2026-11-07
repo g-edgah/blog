@@ -40,18 +40,26 @@ pub fn Hero() -> Element {
 
 #[component]
 fn menu_component(toggle_post: Signal<bool>) -> Element {
+    let (btn_class, btn_text) = if toggle_post() {
+        (
+            "bg-green-500 pointer-cursor mt-10 mb-10 p-2 rounded-md",
+            "+ create new",
+        )
+    } else {
+        (
+            "bg-red-400 pointer-cursor mt-10 mb-10 p-2 rounded-md",
+            "cancel",
+        )
+    };
+
     rsx! {
         div { class: "left w-2/10 flex flex-col bg-gray-300 h-full items-end gap-3 p-5",
             button {
+                class: btn_class,
                 onclick: move |_| {
                     if toggle_post() { toggle_post.set(false) } else { toggle_post.set(true) }
                 },
-                class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md",
-                if toggle_post() {
-                    "cancel"
-                } else {
-                    "+ create new"
-                }
+                "{btn_text}"
             }
             div { class: "", "home" }
             div { class: "", "popular" }
