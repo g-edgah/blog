@@ -12,35 +12,55 @@ fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
-        Hero {}
+        Main {}
 
     }
 }
 
 #[component]
-pub fn Hero() -> Element {
+pub fn Main() -> Element {
     rsx! {
+
         div {
             id: "hero",
             class: "flex bg-pink-400 items-center justify-between w-full h-screen",
 
-            div { class: "left w-3/10 flex flex-col bg-gray-300 h-full items-end gap-3 p-5",
-                button { class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md",
-                    "+create new"
-                }
-                div { class: "", "home" }
-                div { class: "", "popular" }
-                div { class: "", "categories" }
-                div { class: "", "about" }
-            }
+            menu_component {}
+            // posts_component {}
+            post_component {}
+        }
+    }
+}
 
-            div { class: "p-10 right w-7/10 flex flex-col bg-gray-200 h-full gap-10",
-                form { class: "pt-3 right flex flex-col gap-10",
-                    input { class: "text-4xl font-semibold", placeholder: "title", "title" }
-                    input { class: "text-lg font-normal", placeholder: "blog", "blog" }
-                }
-            }
+#[component]
+fn menu_component() -> Element {
+    rsx! {
+        div { class: "left w-2/10 flex flex-col bg-gray-300 h-full items-end gap-3 p-5",
+            button { class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md", "+ create new" }
+            div { class: "", "home" }
+            div { class: "", "popular" }
+            div { class: "", "categories" }
+            div { class: "", "about" }
+        }
+    }
+}
 
+#[component]
+fn posts_component() -> Element {
+    rsx! {
+        div { "something" }
+    }
+}
+
+#[component]
+fn post_component() -> Element {
+    rsx! {
+        div { class: "p-10 right w-8/10 flex flex-col bg-gray-200 h-full gap-10 justify-between",
+            form { class: "pt-3 right flex flex-col gap-10 h-full",
+                input { class: "text-4xl font-semibold", placeholder: "title", "title" }
+                textarea { class: "h-full text-lg font-normal", placeholder: "blog" }
+            }
+            button { class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md", "publish" }
         }
     }
 }
