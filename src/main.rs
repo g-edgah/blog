@@ -82,7 +82,7 @@ fn MenuComponent(toggle_post: Signal<bool>) -> Element {
 #[component]
 fn PostsComponent(posts: Signal<Vec<Post>>) -> Element {
     rsx! {
-        div { class: "w-full h-full bg-gray-200 flex gap-5 p-5",
+        div { class: "w-screen h-full bg-gray-200 flex flex-col gap-5 p-5",
 
             for post in posts.iter() {
                 PostCard { post: post.clone() }
@@ -138,14 +138,14 @@ fn AddPostComponent(title: Signal<String>, body: Signal<String>) -> Element {
 #[component]
 fn PostCard(post: Post) -> Element {
     rsx! {
-        div { class: "w-full h-50 bg-gray-300 rounded-md flex flex-col justify-between py-1 px-2",
-            div { class: "flex flex-col justify-start h-full gap-2",
+        div { class: "h-50 bg-gray-300 rounded-md flex flex-col justify-between py-1 px-2 w-full",
+            div { class: "flex flex-col justify-start w-full h-8/10 gap-2",
                 div { class: " text-lg font-semibold", "{post.title}" }
-                div { class: "", "{post.body}" }
+                div { class: "overflow-scroll", "{post.body}" }
 
             }
 
-            div { class: "flex justify-end w-full", "{post.time_created}" }
+            div { class: "flex justify-end w-full text-xs font-light", "{post.time_created}" }
         }
     }
 }
