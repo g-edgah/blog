@@ -52,18 +52,18 @@ pub fn Hero() -> Element {
 fn MenuComponent(toggle_post: Signal<bool>) -> Element {
     let (btn_class, btn_text) = if toggle_post() {
         (
-            "bg-green-500 pointer-cursor mt-10 mb-10 p-2 rounded-md",
+            "bg-green-500 pointer-cursor mt-10 mb-10 p-2 rounded-md w-30",
             "+ create new",
         )
     } else {
         (
-            "bg-red-400 pointer-cursor mt-10 mb-10 p-2 rounded-md",
-            "cancel",
+            "bg-red-400 pointer-cursor mt-10 mb-10 p-2 rounded-md w-30",
+            "back to notes",
         )
     };
 
     rsx! {
-        div { class: "left w-2/10 flex flex-col bg-gray-300 h-full items-end gap-3 p-5",
+        div { class: "left min-w-2/10 flex flex-col bg-gray-300 h-full items-end gap-3 p-5",
             button {
                 class: btn_class,
                 onclick: move |_| {
@@ -82,7 +82,7 @@ fn MenuComponent(toggle_post: Signal<bool>) -> Element {
 #[component]
 fn PostsComponent(posts: Signal<Vec<Post>>) -> Element {
     rsx! {
-        div { class: "w-screen h-full bg-gray-200 flex flex-col gap-5 p-5",
+        div { class: "w-screen h-full bg-gray-200 flex flex-col gap-5 p-5 overflow-y-scroll",
 
             for post in posts.iter() {
                 PostCard { post: post.clone() }
@@ -141,11 +141,28 @@ fn PostCard(post: Post) -> Element {
         div { class: "h-50 bg-gray-300 rounded-md flex flex-col justify-between py-1 px-2 w-full",
             div { class: "flex flex-col justify-start w-full h-8/10 gap-2",
                 div { class: " text-lg font-semibold", "{post.title}" }
-                div { class: "overflow-scroll", "{post.body}" }
+                div { class: "overflow-y-scroll",
+                    PostBody { body: post.body }
+                }
 
             }
 
             div { class: "flex justify-end w-full text-xs font-light", "{post.time_created}" }
+        }
+    }
+}
+
+#[component]
+fn PostBody(body: String) -> Element {
+    rsx! {
+        for line in body.split("\n") {
+            if line.get(0..3).or_else(|| Some("")).unwrap() == "###" {
+                h3 { {line.get(3..).unwrap()} }
+            } else if line.get(0..2).or_else(|| Some("")).unwrap() == "##" {
+                h2 { {line.get(2..).unwrap()} }
+            } else {
+                span { {line} }
+            }
         }
     }
 }
