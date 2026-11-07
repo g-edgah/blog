@@ -103,16 +103,7 @@ fn post_component(title: Signal<String>, body: Signal<String>) -> Element {
             button {
                 class: "pointer-cursor bg-green-500 mt-10 mb-10 p-2 rounded-md",
                 onclick: move |_| async move {
-                    match create_post(title(), body()).await {
-                        Ok(()) => {
-                            tracing::info!("post created successfuly!");
-                            title.set(String::new());
-                            body.set(String::new());
-                        }
-                        Err(e) => {
-                            tracing::error!("post creation failed!");
-                        }
-                    };
+                    create_post(title(), body()).await.unwrap();
                 },
                 "publish"
             }
@@ -122,19 +113,21 @@ fn post_component(title: Signal<String>, body: Signal<String>) -> Element {
 
 #[server]
 async fn create_post(title: String, body: String) -> Result<(), ServerFnError> {
+    println!("{} {}", title, body);
+    println!("app started");
     let con = rusqlite::Connection::open("./data.db3").unwrap();
 
-    let sql = r#"
-        CREATE TABLE posts (
-            id              INTEGER PRIMARY KEY,
-            user_id         INTEGER NOT NULL,
-            title           TEXT,
-            body            TEXT,
-            time_created    TIMESTAMP
-        )
-    "#;
+    // let sql = r#"
+    //     CREATE TABLE IF NOT EXISTS posts (
+    //         id              INTEGER PRIMARY KEY,
+    //         user_id         INTEGER NOT NULL,
+    //         title           TEXT,
+    //         body            TEXT,
+    //         time_created    TIMESTAMP
+    //     )
+    // "#;
 
-    con.execute(sql, ()).unwrap();
+    // con.execute(sql, ()).unwrap();
 
     Ok(())
 }
