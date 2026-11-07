@@ -37,19 +37,19 @@ pub fn Hero() -> Element {
             id: "hero",
             class: "flex bg-gray-200 items-center justify-between w-full h-screen",
 
-            menu_component { toggle_post }
+            MenuComponent { toggle_post }
 
             if toggle_post() {
-                posts_component { posts }
+                PostsComponent { posts }
             } else {
-                add_post_component { title, body }
+                AddPostComponent { title, body }
             }
         }
     }
 }
 
 #[component]
-fn menu_component(toggle_post: Signal<bool>) -> Element {
+fn MenuComponent(toggle_post: Signal<bool>) -> Element {
     let (btn_class, btn_text) = if toggle_post() {
         (
             "bg-green-500 pointer-cursor mt-10 mb-10 p-2 rounded-md",
@@ -80,18 +80,19 @@ fn menu_component(toggle_post: Signal<bool>) -> Element {
 }
 
 #[component]
-fn posts_component(posts: Signal<Vec<Post>>) -> Element {
+fn PostsComponent(posts: Signal<Vec<Post>>) -> Element {
     rsx! {
-        div {
+        div { class: "w-full h-full bg-gray-200 flex gap-5 p-5",
+
             for post in posts.iter() {
-                post_card { post: post.clone() }
+                PostCard { post: post.clone() }
             }
         }
     }
 }
 
 #[component]
-fn add_post_component(title: Signal<String>, body: Signal<String>) -> Element {
+fn AddPostComponent(title: Signal<String>, body: Signal<String>) -> Element {
     rsx! {
         div { class: "p-10 right w-8/10 flex flex-col bg-gray-200 h-full gap-10 justify-between",
             form { class: "pt-3 right flex flex-col gap-10 h-full",
@@ -135,12 +136,16 @@ fn add_post_component(title: Signal<String>, body: Signal<String>) -> Element {
 }
 
 #[component]
-fn post_card(post: Post) -> Element {
+fn PostCard(post: Post) -> Element {
     rsx! {
-        div { class: "w-50 h-50 bg-blue-500",
-            div { class: "", "{post.title}" }
-            div { class: "", "{post.body}" }
-            div { class: "", "{post.time_created}" }
+        div { class: "w-full h-50 bg-gray-300 rounded-md flex flex-col justify-between py-1 px-2",
+            div { class: "flex flex-col justify-start h-full gap-2",
+                div { class: " text-lg font-semibold", "{post.title}" }
+                div { class: "", "{post.body}" }
+
+            }
+
+            div { class: "flex justify-end w-full", "{post.time_created}" }
         }
     }
 }
@@ -151,34 +156,34 @@ async fn create_post(title: String, body: String) -> Result<(), ServerFnError> {
     println!("app started");
     let con = rusqlite::Connection::open("./data.db3").unwrap();
 
-    // let sql = r#"
-    //     INSERT INTO posts (
-    //         user_id,
-    //         title,
-    //         body,
-    //         time_created
-    //     )
-    //     VALUES (
-    //         1,
-    //         ?1,
-    //         ?2,
-    //         CURRENT_TIMESTAMP
-    //     )
-    // "#;
-
-    //con.execute(sql, [&title, &body]).unwrap();
-
     let sql = r#"
-        CREATE TABLE IF NOT EXISTS posts (
-            id              INTEGER PRIMARY KEY,
-            user_id         INTEGER NOT NULL,
-            title           TEXT,
-            body            TEXT,
-            time_created    TIMESTAMP
+        INSERT INTO posts (
+            user_id,
+            title,
+            body,
+            time_created
+        )
+        VALUES (
+            1,
+            ?1,
+            ?2,
+            CURRENT_TIMESTAMP
         )
     "#;
 
-    con.execute(sql, ()).unwrap();
+    con.execute(sql, [&title, &body]).unwrap();
+
+    // let sql = r#"
+    //     CREATE TABLE IF NOT EXISTS posts (
+    //         id              INTEGER PRIMARY KEY,
+    //         user_id         INTEGER NOT NULL,
+    //         title           TEXT,
+    //         body            TEXT,
+    //         time_created    TIMESTAMP
+    //     )
+    // "#;
+
+    // con.execute(sql, ()).unwrap();
 
     Ok(())
 }
@@ -211,9 +216,10 @@ async fn get_posts() -> Result<Vec<Post>, ServerFnError> {
     for row in rows {
         let post = row.unwrap();
         posts.push(post);
+        println!("pushing post")
     }
 
-    println!("after for statement ");
+    println!("after for statement");
 
     Ok(posts)
 }
