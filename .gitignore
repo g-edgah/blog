@@ -100,3 +100,7 @@ lcov.info
 tarpaulin-report.*
 tmp/
 temp/
+
+
+*.db3
+data.db3
